@@ -36,7 +36,7 @@ func (s Server) GetFollow(ctx *gin.Context) {
 		return
 	}
 
-	follow, err := s.repository.GetFollow(ctx, user1, user2)
+	follow, err := s.repository.CreateReferralCode(ctx, user1, user2)
 	if err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
