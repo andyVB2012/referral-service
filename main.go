@@ -7,7 +7,8 @@ import (
 
 	// "github.com/andyVB2012/referral-service/proto"
 
-	pb "github.com/andyVB2012/referral-service/block"
+	// pb "github.com/andyVB2012/referral-service/block"
+	"github.com/parsaakbari1209/go-mongo-crud-rest-api/block"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 )
@@ -96,7 +97,7 @@ func main() {
 		}
 		b = b[:n] // truncate the buffer to the actual message size
 
-		var blockEvent pb.BlockEvent
+		var blockEvent block.BlockEvent
 		if err := proto.Unmarshal(b, &blockEvent); err != nil {
 			fmt.Printf("error unmarshalling message: %v", err)
 			continue
