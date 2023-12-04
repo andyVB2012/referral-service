@@ -120,19 +120,36 @@ func (r repository) GetAttributions(ctx context.Context, traderAddr string) (mod
 }
 
 func (r repository) GetTotalAttributionAmount(ctx context.Context, traderAddr string) (model.AttributionAmount, error) {
+	return nil, error
 }
 
 func (r repository) GetAttributionByUser(ctx context.Context, traderAddr string, attributer string) (model.AttributionAmount, error) {
+	return nil, error
 }
 
-func toModel(in Attribution) model.Attribution {
+type AttributionAmount struct {
+	TraderAddr string `json:"traderAddr"`
+	Amount     int    `json:"amount"`
+}
+
+type AttributorData struct {
+	TraderAddr   string        `json:"traderAddr"`
+	Attributions []Attribution `json:"attributions"`
+}
+
+type Attribution struct {
+	TraderAddr string `json:"traderAddr"`
+	Code       string `json:"code"`
+}
+
+func toModelAttribution(in Attribution) model.Attribution {
 	return model.Attribution{
 		TraderAddr: in.TraderAddr,
 		Code:       in.Code,
 	}
 }
 
-func fromModel(in model.Attribution) Attribution {
+func fromModelAtribution(in model.Attribution) Attribution {
 	return Attribution{
 		TraderAddr: in.TraderAddr,
 		Code:       in.Code,

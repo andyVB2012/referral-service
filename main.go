@@ -21,7 +21,7 @@ func main() {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	// password := "77J8Knd6vrhvVGjL"
 	opts := options.Client().ApplyURI(
-		"mongodb+srv://georgefane11:77J8Knd6vrhvVGjL@cluster0.2tj2yfw.mongodb.net/?retryWrites=true&w=majority",
+		"mongodb+srv://user insert here",
 	).SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
