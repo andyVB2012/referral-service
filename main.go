@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/andyVB2012/referral-service/proto"
+	// "github.com/andyVB2012/referral-service/proto"
+
+	pb "github.com/andyVB2012/referral-service/block"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 )
@@ -83,22 +85,25 @@ func main() {
 	conn.SetReadDeadline(time.Now().Add(100 * time.Second))
 
 	batch := conn.ReadBatch(10e3, 1e6) // fetch 10KB min, 1MB max
-	b := make([]byte, 10e3)            // 10KB max per message
+	defer batch.Close()
 	count := 0
+
 	for {
-		_, err := batch.Read(b)
+		b := make([]byte, 10e3) // 10KB max per message
+		n, err := batch.Read(b)
 		if err != nil {
-			fmt.Println(err)
-			break
+			break // end of batch
 		}
-		count++
-		var msg BlockEvent
-		err = proto.Unmarshal(b, &msg)
-		if err != nil {
-			fmt.Println(err)
+		b = b[:n] // truncate the buffer to the actual message size
+
+		var blockEvent pb.BlockEvent
+		if err := proto.Unmarshal(b, &blockEvent); err != nil {
+			fmt.Printf("error unmarshalling message: %v", err)
 			continue
 		}
-		fmt.Println(string(b))
+
+		fmt.Printf("Received message: %+v\n", blockEvent)
+		count++
 	}
 	fmt.Println("count", count)
 }
