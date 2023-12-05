@@ -1,9 +1,16 @@
 package model
 
 type AttributorData struct {
-	Code
-	AttributionAmount
-	VaultsInvested int    `json:"vaultsInvested"`
-	LastUpdated    string `json:"lastUpdated"`
-	TotalRefferals int    `json:"totalRefferals"`
+	TraderAddress        string `json:"traderAddr"`
+	TraderAcct           string `json:"traderAcct"`
+	Deposited            int    `json:"deposited"`
+	Withdrawn            int    `json:"withdrawn"`
+	ReferredCode         string `json:"referredCode"`
+	VaultsCreated        int    `json:"vaultsCreated"`
+	ManualInvested       int    `json:"manualInv"`
+	SubscriptionInvested int    `json:"subscriptionInv"`
+	VaultsInvestedIn     int    `json:"vaultsInvestedIn"`
+	TotalInvested        int    `json:"totalInv"`
+	Subscriptions        int    `json:"subscriptions"`
+	StakedAmount         int    `json:"stakedAmount"`
 }
