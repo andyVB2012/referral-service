@@ -51,6 +51,7 @@ func main() {
 	// // create a gin router
 	router := gin.Default()
 	{
+		router.GET("/referral-kafka-health", server.KafkaHealthCheck)
 		router.GET("/referral-health", server.HealthCheck)
 		router.GET("/referral-stats/:address", server.GetAttributionStats)
 		router.GET("/referral-attributors/:address", server.GetAllAttributions)
