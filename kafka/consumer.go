@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/andyVB2012/referral-service/block"
 	"github.com/andyVB2012/referral-service/logger"
 	"github.com/andyVB2012/referral-service/repository"
+	"github.com/joho/godotenv"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 )
@@ -36,11 +38,21 @@ func IsConsumerHealthy() bool {
 
 func RunnConsumers(repo repository.Repository) {
 	logger.Log.Info("Running consumers")
+	err := godotenv.Load() // Loads from .env by default, or specify .env file
+	if err != nil {
+		logger.Log.Fatalf("Error loading .env file: %v", err)
+	}
+	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
+	if kafkaBrokers == "" {
+		kafkaBrokers = "localhost:9092" // Default value if the environment variable is not set
+	}
+
+	logger.Log.Info("Running consumers")
 	r := kafka.NewReader(kafka.ReaderConfig{
 		CommitInterval: time.Second,
-		Brokers:        []string{"localhost:9092"},                                                                                                                                                                                                                                                   // Replace with your Kafka broker addresses
-		GroupID:        "referral-service",                                                                                                                                                                                                                                                           // Replace with your consumer group ID
-		GroupTopics:    []string{"stfx.stream.block.arb.stfx.vault.v2", "stfx.stream.block.eth.stfx.vault.v2", "stfx.stream.block.arb.stfx.q", "stfx.stream.block.eth.stfx.q", "stfx.stream.block.eth.stfx.stake", "stfx.stream.block.arb.stfx.stake", "stfx.stream.block.arb.stfx.subscription.v1"}, // Replace with your topic name
+		Brokers:        []string{kafkaBrokers},
+		GroupID:        "referral-service",
+		GroupTopics:    []string{"stfx.stream.block.arb.stfx.vault.v2", "stfx.stream.block.eth.stfx.vault.v2", "stfx.stream.block.arb.stfx.q", "stfx.stream.block.eth.stfx.q", "stfx.stream.block.eth.stfx.stake", "stfx.stream.block.arb.stfx.stake", "stfx.stream.block.arb.stfx.subscription.v1"},
 	})
 	defer r.Close()
 

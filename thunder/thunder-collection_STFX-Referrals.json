@@ -1,0 +1,131 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "STFX-Referrals",
+    "dateExported": "2023-12-05T21:05:53.804Z",
+    "version": "1.1",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "3d7a4962-27bc-4e15-bc97-5a741acaeaf8",
+            "colId": "b1204f76-4940-4bc6-bda2-9dfd4b35ab27",
+            "containerId": "",
+            "name": "Get Stats",
+            "url": "http://localhost:9090/referral-stats/0x87ad83dc2f12a14c85d20f178a918a65edfe1b42",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2023-12-05T19:02:33.957Z",
+            "modified": "2023-12-05T19:02:33.957Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "1154fb8c-4033-4435-848a-8f9926a63460",
+            "colId": "b1204f76-4940-4bc6-bda2-9dfd4b35ab27",
+            "containerId": "",
+            "name": "Get Attributions",
+            "url": "http://localhost:9090/referral-attributors/0x87ad83dc2f12a14c85d20f178a918a65edfe1b42",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2023-12-05T19:02:57.391Z",
+            "modified": "2023-12-05T19:10:48.693Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "d4ad8fb3-2fb6-4f9a-a9e4-e39999e3285e",
+            "colId": "b1204f76-4940-4bc6-bda2-9dfd4b35ab27",
+            "containerId": "",
+            "name": "Get Health",
+            "url": "http://localhost:9090/referral-health",
+            "method": "GET",
+            "sortNum": 25000,
+            "created": "2023-12-05T20:05:17.804Z",
+            "modified": "2023-12-05T20:05:27.237Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "b946a112-0c07-498b-b3b3-2de45cfa8172",
+            "colId": "b1204f76-4940-4bc6-bda2-9dfd4b35ab27",
+            "containerId": "",
+            "name": "Get Kafka Health",
+            "url": "http://localhost:9090/referral-kafka-health",
+            "method": "GET",
+            "sortNum": 27500,
+            "created": "2023-12-05T20:50:34.452Z",
+            "modified": "2023-12-05T20:50:53.875Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "ea0be4f1-32ad-4b7b-8650-86f4cac62375",
+            "colId": "b1204f76-4940-4bc6-bda2-9dfd4b35ab27",
+            "containerId": "",
+            "name": "Get ReferralCode",
+            "url": "http://localhost:9090/referral-code/0x87ad83dc2f12a14c85d20f178a918a65edfe1b42",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2023-12-05T19:07:58.238Z",
+            "modified": "2023-12-05T19:09:08.261Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "ff1744c0-3237-4a90-a347-eaf2a8b5b89e",
+            "colId": "b1204f76-4940-4bc6-bda2-9dfd4b35ab27",
+            "containerId": "",
+            "name": "Post ReferralCode",
+            "url": "http://localhost:9090/referral-generatecode/0x87ad83dc2f12a14c85d20f178a918a65edfe1b42",
+            "method": "POST",
+            "sortNum": 40000,
+            "created": "2023-12-05T19:42:22.290Z",
+            "modified": "2023-12-05T19:49:36.934Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "fe5e180d-470d-4e37-af3f-c249b1371998",
+            "colId": "b1204f76-4940-4bc6-bda2-9dfd4b35ab27",
+            "containerId": "",
+            "name": "Post AddAtributor",
+            "url": "http://localhost:9090/referral-addattributor/0x1",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2023-12-05T19:49:59.735Z",
+            "modified": "2023-12-05T19:53:43.486Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "Address",
+                    "value": "\"0x87ad83DC2F12A14C85D20f178A918a65Edfe1B42\"",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "Message",
+                    "value": "\"0x1\"",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "Signature",
+                    "value": "\"0x87ad83DC2F12A14C85D20f178A918a65Edfe1B42\"",
+                    "isDisabled": true,
+                    "isPath": false
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\"Address\":\"0x87ad83DC2F12A14C85D20f178A918a65Edfe1B42\",\"Message\":\"0x1\", \"Signature\":\"0x87ad83DC2F12A14C85D20f178A918a65Edfe1B42\"}",
+                "form": []
+            },
+            "tests": []
+        }
+    ]
+}

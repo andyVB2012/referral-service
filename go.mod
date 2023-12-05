@@ -5,6 +5,7 @@ go 1.21.4
 require (
 	github.com/ethereum/go-ethereum v1.13.5
 	github.com/gin-gonic/gin v1.9.1
+	github.com/joho/godotenv v1.5.1
 	github.com/segmentio/kafka-go v0.4.46
 	github.com/shopspring/decimal v1.3.1
 	go.mongodb.org/mongo-driver v1.13.0

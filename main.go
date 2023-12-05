@@ -2,30 +2,38 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"os"
 
 	"github.com/andyVB2012/referral-service/http"
 	"github.com/andyVB2012/referral-service/kafka"
+	"github.com/andyVB2012/referral-service/logger"
 	"github.com/andyVB2012/referral-service/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
-	// create a database connection
+	err := godotenv.Load() // Loads from .env by default, or specify .env file
+	if err != nil {
+		logger.Log.Fatalf("Error loading .env file: %v", err)
+	}
 
-	// Use the SetServerAPIOptions() method to set the Stable API version to 1
+	// create a database connection
+	mongoUser := os.Getenv("MONGO_INITDB_ROOT_USERNAME")
+	mongoPass := os.Getenv("MONGO_INITDB_ROOT_PASSWORD")
+
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(
-		"mongodb+srv://andrewvb2012:U3aQdGnoYzznB1d2@cluster0.gmjmvad.mongodb.net/",
+		"mongodb+srv://" + mongoUser + ":" + mongoPass + "@cluster0.gmjmvad.mongodb.net/",
 	).SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		panic(err)
+		logger.Log.Errorf("Failed to connect to MongoDB: %v", err.Error())
 	}
 
 	defer func() {
@@ -36,9 +44,9 @@ func main() {
 
 	// Send a ping to confirm a successful connection
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Err(); err != nil {
-		panic(err)
+		logger.Log.Errorf("Failed to ping MongoDB: %v", err.Error())
 	}
-	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+	logger.Log.Info("Connected to MongoDB!")
 
 	// create a repository
 	repository := repository.NewRepository(client.Database("stfx-referral-system"))
