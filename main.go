@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/andyVB2012/referral-service/http"
+	"github.com/andyVB2012/referral-service/kafka"
 	"github.com/andyVB2012/referral-service/repository"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -45,7 +46,8 @@ func main() {
 	// create an http server
 	server := http.NewServer(repository)
 
-	// kafka.RunnConsumers(repository)
+	// create a kafka consumer
+	go kafka.RunnConsumers(repository)
 	// // create a gin router
 	router := gin.Default()
 	{
