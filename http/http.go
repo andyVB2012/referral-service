@@ -4,12 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-
-	// "github.com/parsaakbari1209/go-mongo-crud-rest-api/model"
-	// "github.com/parsaakbari1209/go-mongo-crud-rest-api/repository"
-
 	"github.com/andyVB2012/referral-service/repository"
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -29,6 +25,10 @@ func NewServer(repository repository.Repository) *Server {
 	return &Server{repository: repository}
 }
 
+func (s Server) HealthCheck(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"message": "ok"})
+}
+
 func (s Server) GetAttributionStats(ctx *gin.Context) {
 	address := ctx.Param("address")
 	if address == "" {
@@ -45,7 +45,12 @@ func (s Server) GetAttributionStats(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"data": stats})
+	response := StatsResponse{
+		Address:      address,
+		ReferralCode: code,
+		Stats:        stats,
+	}
+	ctx.JSON(http.StatusOK, gin.H{"data": response})
 
 }
 
@@ -81,7 +86,6 @@ func (s Server) GetAllAttributions(ctx *gin.Context) {
 	// Wrap the response in an array
 	results := []AttributionResponse{response}
 
-	// Send the response
 	ctx.JSON(http.StatusOK, gin.H{"results": results})
 
 }
@@ -100,141 +104,64 @@ func (s Server) GetReferralCode(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": code})
 }
 
-// func (s Server) GetFollow(ctx *gin.Context) {
-// 	user1 := ctx.Param("user1")
-// 	if user1 == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument user1"})
-// 		return
-// 	}
+func (s Server) CreateReferralCode(ctx *gin.Context) {
+	address := ctx.Param("address")
+	if address == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidAddress})
+		return
+	}
 
-// 	user2 := ctx.Param("user2")
-// 	if user2 == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument user2"})
-// 		return
-// 	}
+	code, err := s.repository.CreateReferralCode(ctx, address)
+	if err != nil {
+		if errors.Is(err, repository.ErrAlreadyAdded) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, ErrCodeError)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"data": code})
+}
 
-// 	if user1 == user2 {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "user1 == user2"})
-// 		return
-// 	}
+func (s Server) AddAttributor(ctx *gin.Context) {
 
-// 	follow, err := s.repository.IsCodeInDb(ctx, user1, user2)
-// 	if err != nil {
-// 		if errors.Is(err, repository.ErrUserNotFound) {
-// 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		ctx.JSON(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{"data": follow})
-// }
+	var req AttributionRequest
 
-// func (s Server) GetFollowings(ctx *gin.Context) {
-// 	user1 := ctx.Param("user1")
-// 	if user1 == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument user1"})
-// 		return
-// 	}
+	// Bind the JSON payload to the struct
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
 
-// 	follow, err := s.repository.GetFollowings(ctx, user1)
-// 	if err != nil {
-// 		if errors.Is(err, repository.ErrUserNotFound) {
-// 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		ctx.JSON(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{"data": follow})
-// }
+	// Validate the request data
+	if req.Address == "" || req.Message == "" || req.Signature == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "address, message, and signature are required"})
+		return
+	}
+	code := ctx.Param("code")
+	if code == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidAddress})
+		return
+	}
 
-// func (s Server) GetFollowers(ctx *gin.Context) {
-// 	user2 := ctx.Param("user2")
-// 	if user2 == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument user2"})
-// 		return
-// 	}
+	check, err := VerifySignature(req.Message, req.Signature, req.Address)
+	if err != nil {
+		if err.Error() == "invalid signature" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, "signature verification failed")
+		return
+	}
+	if check == false {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid signature"})
+		return
+	}
 
-// 	follow, err := s.repository.GetFollowers(ctx, user2)
-// 	if err != nil {
-// 		if errors.Is(err, repository.ErrUserNotFound) {
-// 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		ctx.JSON(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{"data": follow})
-// }
+	err1 := s.repository.AddAttributor(ctx, code, req.Address)
+	if err1 != nil {
+		ctx.JSON(http.StatusInternalServerError, ErrAttributionFailed)
+		return
+	}
 
-// func (s Server) GetAll(ctx *gin.Context) {
-// 	follow, err := s.repository.GetAll(ctx)
-// 	if err != nil {
-// 		if errors.Is(err, repository.ErrUserNotFound) {
-// 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		ctx.JSON(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{"data": follow})
-// }
-
-// func (s Server) CreateFollow(ctx *gin.Context) {
-// 	var follow model.Follow
-// 	if err := ctx.ShouldBindJSON(&follow); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
-// 		return
-// 	}
-// 	followOut, err := s.repository.CreateFollow(ctx, follow)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{"data": followOut})
-// }
-
-// func (s Server) CreateFollowBatch(ctx *gin.Context) {
-// 	var follows []model.Follow
-// 	var followsOut []model.Follow
-// 	if err := ctx.ShouldBindJSON(&follows); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
-// 		return
-// 	}
-// 	followsOut, err := s.repository.CreateFollowBatch(ctx, follows)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{"data": followsOut})
-// }
-
-// func (s Server) DeleteFollow(ctx *gin.Context) {
-// 	user1 := ctx.Param("user1")
-// 	if user1 == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument user1"})
-// 		return
-// 	}
-
-// 	user2 := ctx.Param("user2")
-// 	if user2 == "" {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument user2"})
-// 		return
-// 	}
-
-// 	if user1 == user2 {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "user1 == user2"})
-// 		return
-// 	}
-
-// 	if err := s.repository.DeleteFollow(ctx, user1, user2); err != nil {
-// 		if errors.Is(err, repository.ErrUserNotFound) {
-// 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{})
-// }
+}
