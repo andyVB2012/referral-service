@@ -4,7 +4,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/andyVB2012/referral-service/kafka"
+	"github.com/andyVB2012/referral-service/logger"
 	"github.com/andyVB2012/referral-service/repository"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +25,16 @@ type Server struct {
 }
 
 func NewServer(repository repository.Repository) *Server {
+	logger.Log.Info("Starting HTTP server")
 	return &Server{repository: repository}
+}
+
+func (s Server) KafkaHealthCheck(ctx *gin.Context) {
+	if kafka.IsConsumerHealthy() {
+		ctx.JSON(http.StatusOK, gin.H{"status": "Kafka consumer is up"})
+	} else {
+		ctx.JSON(http.StatusServiceUnavailable, gin.H{"status": "kafka consumer is down"})
+	}
 }
 
 func (s Server) HealthCheck(ctx *gin.Context) {

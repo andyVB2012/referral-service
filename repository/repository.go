@@ -3,12 +3,12 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/andyVB2012/referral-service/logger"
 	"github.com/andyVB2012/referral-service/model"
 )
 
@@ -26,6 +26,7 @@ type repository struct {
 }
 
 func NewRepository(db *mongo.Database) Repository {
+	logger.Log.Info("Initializing new repository")
 	return &repository{db: db}
 }
 
@@ -157,7 +158,6 @@ func (r repository) AddTraderAccount(ctx context.Context, traderAddr string, tra
 		Collection("AttributionData").
 		FindOneAndUpdate(ctx, bson.M{"traderaddress": traderAddr}, update)
 
-	fmt.Println("res: ", res.Decode(&model.AttributorData{}))
 	// Check for errors, including the case where the document does not exist
 	if err := res.Err(); err != nil {
 		if err == mongo.ErrNoDocuments {
