@@ -8,3 +8,9 @@ type AttributionResponse struct {
 	Stats        model.AttributionStats `json:"stats"`
 	Attributors  []model.AttributorData `json:"attributors"`
 }
+
+type StatsResponse struct {
+	Address      string                 `json:"address"`
+	ReferralCode string                 `json:"referralCode"`
+	Stats        model.AttributionStats `json:"stats"`
+}
