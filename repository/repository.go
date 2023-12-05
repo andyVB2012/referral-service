@@ -18,6 +18,7 @@ var (
 	ErrAttributionFailed = errors.New("Attribution failed")
 	ErrCodeError         = errors.New("Referral code error")
 	ErrNoTraderAddr      = errors.New("No trader address")
+	ErrAlreadyAdded      = errors.New("Pre exsisting Referral Code")
 )
 
 type repository struct {
@@ -30,6 +31,10 @@ func NewRepository(db *mongo.Database) Repository {
 
 func (r repository) CreateReferralCode(ctx context.Context, traderAddr string) (model.Referral, error) {
 	// Define the code to be inserted
+	if r.isAddressInReferralCode(ctx, traderAddr) {
+		return model.Referral{}, ErrAlreadyAdded
+	}
+
 	refCode := r.generateCode()
 	code := model.Referral{
 		TraderAddr: traderAddr,
@@ -56,6 +61,20 @@ func (r repository) AddAttributor(ctx context.Context, refCode string, traderAdd
 	}
 	_, err := collection.InsertOne(ctx, data)
 	return err
+}
+
+func (r repository) isAddressInReferralCode(ctx context.Context, traderAddr string) bool {
+	var result bson.M
+	filter := bson.M{"traderaddr": traderAddr}
+	err := r.db.Collection("referral-codes").FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// No document found with the given refCode
+			return false
+		}
+		return false
+	}
+	return true
 }
 
 func (r repository) generateCode() string {
